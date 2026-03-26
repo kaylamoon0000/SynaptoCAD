@@ -49,11 +49,13 @@
                     <span class="text-[8px] text-slate-500 font-bold mb-1 uppercase text-center">Pathology</span>
                     <select id="diseasePreset" onchange="applyDisease()" class="bg-transparent text-xs font-bold text-blue-400 outline-none cursor-pointer">
                         <option value="healthy">Healthy Baseline</option>
-                        <option value="alzheimers">Alzheimer's</option>
-                        <option value="stroke">Stroke</option>
-                        <option value="parkinsons">Parkinson's</option>
-                        <option value="als">ALS</option>
+                        <option value="alzheimers">Alzheimer's Disease</option>
+                        <option value="stroke">Ischemic Stroke</option>
+                        <option value="parkinsons">Parkinson's Disease</option>
+                        <option value="als">Amyotrophic Lateral Sclerosis</option>
                         <option value="ms">Multiple Sclerosis</option>
+                        <option value="tbi">Traumatic Brain Injury</option>
+                        <option value="huntingtons">Huntington's Disease</option>
                     </select>
                 </div>
                 <div class="flex flex-col border-r border-slate-800 pr-4">
@@ -138,42 +140,44 @@
     <script>
         const MOA_DATABASE = {
             TNFa: { 
-                inhibit: { sci: "Monoclonal antibody binding of soluble TNF-α.", bio: "Suppresses M1 polarization.", summary: "Reduces neuroinflammation.", hl: 0.99 }, 
-                activate: { sci: "Exogenous recombinant TNF infusion.", bio: "Triggers caspase-3 apoptosis.", summary: "Elevates cytokine flux.", hl: 0.98 } 
+                inhibit: { sci: "Monoclonal antibody competitive binding (Infliximab/Adalimumab).", bio: "Reduces NF-κB translocation and glial M1 phenotype.", summary: "Abates pro-inflammatory cytokine storm.", hl: 0.99 }, 
+                activate: { sci: "Recombinant human TNF-α cytokine infusion.", bio: "Upregulates TNFR1-mediated apoptotic pathways.", summary: "Drives acute neuroinflammation and necroptosis.", hl: 0.98 } 
             },
             BDNF: { 
-                activate: { sci: "Small-molecule TrkB agonist.", bio: "Promotes synaptogenesis.", summary: "Enhances neural growth.", hl: 0.995 }, 
-                inhibit: { sci: "Selective TrkB antagonist (ANA-12).", bio: "Suppresses LTP.", summary: "Suppresses plasticity.", hl: 0.99 } 
+                activate: { sci: "7,8-Dihydroxyflavone or small-molecule TrkB agonists.", bio: "Stimulates PI3K/Akt pathway for neural plasticity.", summary: "Promotes synaptogenesis and neuronal repair.", hl: 0.995 }, 
+                inhibit: { sci: "K252a or ANA-12 TrkB selective antagonism.", bio: "Blocks pro-survival signaling and LTP maintenance.", summary: "Impairs synaptic strengthening and neurogenesis.", hl: 0.99 } 
             },
             Abeta: { 
-                inhibit: { sci: "BACE1 aspartyl protease inhibition.", bio: "Reduces Aβ42 production.", summary: "Limits amyloid aggregation.", hl: 0.999 }, 
-                activate: { sci: "Seeding with exogenous Aβ oligomers.", bio: "Induces proteopathic stress.", summary: "Increases plaque formation.", hl: 0.999 } 
+                inhibit: { sci: "BACE1 aspartyl protease inhibition or γ-secretase modulators.", bio: "Reduces proteolytic cleavage of Amyloid Precursor Protein (APP).", summary: "Slows oligomeric plaque accumulation.", hl: 0.999 }, 
+                activate: { sci: "Direct stereotaxic infusion of synthetic Aβ42 oligomers.", bio: "Disrupts calcium homeostasis and mitochondrial function.", summary: "Models proteopathic amyloidosis stress.", hl: 0.999 } 
             },
             Glu: { 
-                inhibit: { sci: "Uncompetitive NMDA antagonist.", bio: "Blocks excessive Ca2+ influx.", summary: "Regulates over-excitation.", hl: 0.98 }, 
-                activate: { sci: "Direct glutamatergic agonist.", bio: "Promotes depolarization.", summary: "Increases global firing.", hl: 0.97 } 
+                inhibit: { sci: "Memantine-style uncompetitive NMDA receptor antagonism.", bio: "Selectively blocks pathological calcium influx (Excitotoxicity).", summary: "Modulates glutamatergic over-excitation.", hl: 0.98 }, 
+                activate: { sci: "AMPA/NMDA direct receptor agonists.", bio: "Depolarizes postsynaptic membranes and triggers firing.", summary: "Enhances global excitatory neurotransmission.", hl: 0.97 } 
             },
             Tau: { 
-                inhibit: { sci: "Microtubule-stabilizing agents.", bio: "Halts hyperphosphorylation.", summary: "Prevents tangles.", hl: 0.995 }, 
-                activate: { sci: "Induces hyperphosphorylation.", bio: "Accelerates NFT formation.", summary: "Accelerates structural failure.", hl: 0.99 } 
+                inhibit: { sci: "Glycogen synthase kinase-3 beta (GSK-3β) inhibition.", bio: "Prevents hyperphosphorylation and microtubule dissociation.", summary: "Inhibits Neurofibrillary Tangle (NFT) formation.", hl: 0.995 }, 
+                activate: { sci: "Okadaic acid or protein phosphatase inhibition.", bio: "Triggers massive tau aggregation and axonal collapse.", summary: "Accelerates structural failure and tangle spread.", hl: 0.99 } 
             },
             Ach: { 
-                activate: { sci: "AChE inhibitor.", bio: "Potentiates transmission.", summary: "Strengthens memory signals.", hl: 0.985 }, 
-                inhibit: { sci: "Muscarinic antagonist.", bio: "Impairs memory consolidation.", summary: "Attenuates signaling.", hl: 0.98 } 
+                activate: { sci: "Acetylcholinesterase inhibitors (Donepezil/Galantamine).", bio: "Increases synaptic residence time of acetylcholine.", summary: "Strengthens cholinergic memory circuitry.", hl: 0.985 }, 
+                inhibit: { sci: "Scopolamine or muscarinic receptor antagonism.", bio: "Competitively blocks parasympathetic and cognitive signals.", summary: "Attenuates cholinergic signal transmission.", hl: 0.98 } 
             },
             ROS: { 
-                inhibit: { sci: "SOD/Catalase mimetic.", bio: "Preserves ΔΨm potential.", summary: "Prevents oxidative damage.", hl: 0.97 }, 
-                activate: { sci: "Mitochondrial uncoupler.", bio: "Drives apoptotic leak.", summary: "Increases free radical damage.", hl: 0.96 } 
+                inhibit: { sci: "Superoxide dismutase (SOD) mimetics / Nrf2 activators.", bio: "Neutralizes hydroxyl radicals and preserves mitochondrial potential.", summary: "Reduces oxidative stress and lipid peroxidation.", hl: 0.97 }, 
+                activate: { sci: "Rotenone or mitochondrial Complex I uncouplers.", bio: "Leads to cytochrome c release and superoxide leakage.", summary: "Forces oxidative damage and metabolic failure.", hl: 0.96 } 
             }
         };
 
         const diseaseBase = {
-            healthy: { TNFa:0.02, Abeta:0.01, Tau:0.01, ROS:0.02, Glu:0.1, Ach:0.8, BDNF:0.9 },
-            alzheimers: { TNFa:0.6, Abeta:0.85, Tau:0.75, ROS:0.5, Glu:0.4, Ach:0.2, BDNF:0.3 },
-            stroke: { TNFa:0.5, Abeta:0, Tau:0, ROS:0.8, Glu:0.95, Ach:0.3, BDNF:0.1 },
-            parkinsons: { TNFa:0.4, Abeta:0.1, Tau:0.2, ROS:0.6, Glu:0.4, Ach:0.4, BDNF:0.2 },
-            als: { TNFa:0.5, Abeta:0, Tau:0.1, ROS:0.9, Glu:0.75, Ach:0.3, BDNF:0.2 },
-            ms: { TNFa:0.9, Abeta:0, Tau:0, ROS:0.4, Glu:0.3, Ach:0.5, BDNF:0.4 }
+            healthy: { TNFa:0.02, Abeta:0.01, Tau:0.01, ROS:0.02, Glu:0.1, Ach:0.8, BDNF:0.9, desc: "Optimal baseline; no pharmacological intervention required." },
+            alzheimers: { TNFa:0.6, Abeta:0.85, Tau:0.75, ROS:0.5, Glu:0.4, Ach:0.2, BDNF:0.3, desc: "Amyloid plaques and Tau tangles with cholinergic deficit." },
+            stroke: { TNFa:0.5, Abeta:0, Tau:0, ROS:0.8, Glu:0.95, Ach:0.3, BDNF:0.1, desc: "Massive glutamate excitotoxicity and oxidative stress." },
+            parkinsons: { TNFa:0.4, Abeta:0.1, Tau:0.2, ROS:0.6, Glu:0.4, Ach:0.4, BDNF:0.2, desc: "Mitochondrial dysfunction and pro-inflammatory glial state." },
+            als: { TNFa:0.5, Abeta:0, Tau:0.1, ROS:0.9, Glu:0.75, Ach:0.3, BDNF:0.2, desc: "Motor neuron loss driven by ROS and glutamatergic stress." },
+            ms: { TNFa:0.9, Abeta:0, Tau:0, ROS:0.4, Glu:0.3, Ach:0.5, BDNF:0.4, desc: "Immune-mediated neuroinflammation and demyelination." },
+            tbi: { TNFa:0.7, Abeta:0.3, Tau:0.4, ROS:0.85, Glu:0.8, Ach:0.4, BDNF:0.2, desc: "Acute mechanical trauma and secondary injury cascade." },
+            huntingtons: { TNFa:0.3, Abeta:0, Tau:0.2, ROS:0.7, Glu:0.6, Ach:0.3, BDNF:0.1, desc: "GABAergic loss and protein aggregation in the striatum." }
         };
 
         let patient = { age: 45, weight: 75 };
@@ -201,9 +205,6 @@
                 if (mol.dose < 0.001) mol.dose = 0;
             });
 
-            if (activeMolecules.length > 0 && Math.random() > 0.9) {
-                logToTerminal(`Systemic Clearance Active: ${metRate.toFixed(2)}x BMR Scaling.`);
-            }
             updateVisuals(false);
         }, 150);
 
@@ -265,7 +266,7 @@
                     <div class="flex justify-between items-center mb-2">
                         <input type="text" value="${m.name}" onchange="activeMolecules[${i}].name=this.value" class="bg-transparent text-[10px] font-bold text-blue-300 outline-none">
                         <div id="mgkg-${i}" class="text-[8px] font-mono text-emerald-400">${(m.dose * 10 / (patient.weight/75)).toFixed(2)} mg/kg</div>
-                        <button onclick="activeMolecules.splice(${i},1); renderRack();" class="text-slate-600 font-bold">✕</button>
+                        <button onclick="activeMolecules.splice(${i},1); renderRack(); updateVisuals();" class="text-slate-600 font-bold">✕</button>
                     </div>
                     <div class="flex gap-2 mb-3">
                         <select onchange="activeMolecules[${i}].target=this.value; renderRack(); updateVisuals()" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 w-full">
@@ -287,13 +288,23 @@
         }
 
         function optimizeDosage() {
-            logToTerminal("Calculating Optimal Cell Viability dosage...");
-            activeMolecules.forEach(m => {
-                if (m.mechanism === 'inhibit' && (m.target === 'TNFa' || m.target === 'Abeta' || m.target === 'ROS')) m.dose = 0.85;
-                if (m.mechanism === 'activate' && m.target === 'BDNF') m.dose = 1.2;
-            });
+            logToTerminal(`Analyzing Pathology: ${currentDisease.toUpperCase()}...`);
+            if (currentDisease === "healthy") {
+                activeMolecules = [];
+                logToTerminal("Healthy baseline detected. Zero dosage recommended.");
+            } else {
+                let base = diseaseBase[currentDisease];
+                activeMolecules = [];
+                // Smart Logic: Only prescribe if levels are pathologic
+                if (base.TNFa > 0.3) activeMolecules.push({ name: "Anti-TNF", target: "TNFa", mechanism: "inhibit", dose: 0.8 });
+                if (base.Abeta > 0.4) activeMolecules.push({ name: "Amyloid-X", target: "Abeta", mechanism: "inhibit", dose: 1.1 });
+                if (base.ROS > 0.4) activeMolecules.push({ name: "Nrf2-S", target: "ROS", mechanism: "inhibit", dose: 0.6 });
+                if (base.BDNF < 0.5) activeMolecules.push({ name: "TrkB-Plus", target: "BDNF", mechanism: "activate", dose: 0.9 });
+                if (base.Ach < 0.5) activeMolecules.push({ name: "Ch-E-Inhib", target: "Ach", mechanism: "activate", dose: 0.5 });
+                logToTerminal(`Optimal protocol for ${currentDisease} applied.`);
+            }
+            renderRack();
             updateVisuals();
-            logToTerminal("Dosage optimized for survival vs toxicity threshold.");
         }
 
         function runTrial() {
@@ -324,12 +335,11 @@
             patient.weight = parseInt(document.getElementById('weight').value);
             document.getElementById('ageDisp').innerText = patient.age + 'y';
             document.getElementById('weightDisp').innerText = patient.weight + 'kg';
-            logToTerminal(`Profile Updated: ${patient.age}y / ${patient.weight}kg. Adjusting Kinetics.`);
             updateVisuals();
         }
         function applyDisease() { 
             currentDisease = document.getElementById('diseasePreset').value; 
-            logToTerminal(`Pathology Set: ${currentDisease.toUpperCase()}.`);
+            logToTerminal(`Case: ${diseaseBase[currentDisease].desc}`);
             updateVisuals(); 
         }
         function addNewMolecule() { 
