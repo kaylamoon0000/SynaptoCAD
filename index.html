@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SynaptoCAD</title>
+    <title>SynaptoCAD | Clinical v6.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,8 +16,9 @@
         .sci-text { opacity: 0.8; border-left: 2px solid #3b82f6; padding-left: 8px; margin-top: 6px; font-size: 0.58rem; line-height: 1.25; color: #cbd5e1; }
         .trial-overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); z-index: 1000; align-items: center; justify-content: center; }
         .region-header { color: #fbbf24; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; text-align: center; width: 100%; }
-        @keyframes pulse-red { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; background-color: #ef4444; } }
-        .tox-warning { animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0%, 100% { opacity: 0.2; filter: saturate(100%); } 50% { opacity: 0.9; filter: saturate(250%); background-color: #ef4444; } }
+        .tox-warning { animation: pulse-red 0.8s infinite; }
+        .neural-path { transition: fill 0.5s ease; opacity: 0.4; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans overflow-x-hidden">
@@ -29,7 +30,10 @@
                     <h2 class="text-3xl font-black italic text-white tracking-tighter uppercase">Phase II Population Study</h2>
                     <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">N=100 Stochastic Patient Cohort</p>
                 </div>
-                <button onclick="closeTrial()" class="bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center text-white transition">✕</button>
+                <div class="flex gap-4">
+                    <button onclick="downloadReport()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-xl transition uppercase">Download Report</button>
+                    <button onclick="closeTrial()" class="bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center text-white transition">✕</button>
+                </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800 text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Efficacy</span><div id="successRate" class="text-5xl font-mono text-emerald-400 mt-2">0%</div></div>
@@ -44,10 +48,10 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="h-10 w-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center font-bold shadow-lg text-white text-xl">Σ</div>
-                <div><h1 class="font-black tracking-tight text-white italic leading-none text-xl uppercase">SynaptoCAD</h1><p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase">v5.9</p></div>
+                <div><h1 class="font-black tracking-tight text-white italic leading-none text-xl uppercase">SynaptoCAD</h1><p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase">v6.1 Neural Mapping active</p></div>
             </div>
-            <div class="flex flex-wrap items-center gap-4 bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
-                <div class="flex flex-col border-r border-slate-800 pr-4">
+            <div class="flex flex-wrap items-center gap-3 bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
+                <div class="flex flex-col border-r border-slate-800 pr-3">
                     <span class="text-[8px] text-slate-500 font-bold mb-1 uppercase text-center">Pathology</span>
                     <select id="diseasePreset" onchange="applyDisease()" class="bg-transparent text-xs font-bold text-blue-400 outline-none cursor-pointer">
                         <option value="healthy">Healthy Baseline</option>
@@ -60,15 +64,22 @@
                         <option value="huntingtons">Huntington's Disease</option>
                     </select>
                 </div>
-                <div class="flex flex-col border-r border-slate-800 pr-4">
-                    <div class="flex justify-between w-20 text-[8px] font-bold text-slate-500"><span>AGE</span><span id="ageDisp" class="text-blue-400">45y</span></div>
+                <div class="flex flex-col border-r border-slate-800 pr-3">
+                    <span class="text-[8px] text-slate-500 font-bold mb-1 uppercase text-center">Sex</span>
+                    <select id="patientSex" onchange="updateDemographics()" class="bg-transparent text-xs font-bold text-blue-400 outline-none cursor-pointer">
+                        <option value="male">XY (Male)</option>
+                        <option value="female">XX (Female)</option>
+                    </select>
+                </div>
+                <div class="flex flex-col border-r border-slate-800 pr-3">
+                    <div class="flex justify-between w-16 text-[8px] font-bold text-slate-500"><span>AGE</span><span id="ageDisp" class="text-blue-400">45y</span></div>
                     <input type="range" id="age" min="18" max="95" value="45" oninput="updateDemographics()">
                 </div>
-                <div class="flex flex-col border-r border-slate-800 pr-4">
-                    <div class="flex justify-between w-20 text-[8px] font-bold text-slate-500"><span>WEIGHT</span><span id="weightDisp" class="text-blue-400">75kg</span></div>
+                <div class="flex flex-col border-r border-slate-800 pr-3">
+                    <div class="flex justify-between w-16 text-[8px] font-bold text-slate-500"><span>WT</span><span id="weightDisp" class="text-blue-400">75kg</span></div>
                     <input type="range" id="weight" min="40" max="150" value="75" oninput="updateDemographics()">
                 </div>
-                <button onclick="runTrial()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-5 py-2 rounded-xl transition shadow-lg uppercase italic">Run Phase II Trial</button>
+                <button onclick="runTrial()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-4 py-2 rounded-xl transition shadow-lg uppercase italic">Run Phase II Trial</button>
             </div>
         </div>
     </nav>
@@ -105,15 +116,15 @@
                 </div>
 
                 <div class="relative z-30 flex flex-col items-center">
-                    <div class="region-header">Hippocampus</div>
+                    <div class="region-header">Hippocampus / Limbic System</div>
                     <div id="node-Survival" class="node w-36 h-36 rounded-full border-4 border-slate-900 flex flex-col items-center justify-center bg-slate-950 shadow-2xl">
-                        <span class="text-[8px] font-black text-slate-500 italic uppercase">Cell Viability</span>
+                        <span class="text-[8px] font-black text-slate-500 italic uppercase">Viability</span>
                         <span class="val font-mono text-4xl text-emerald-400">100%</span>
                     </div>
                 </div>
 
                 <div class="relative z-30 flex flex-col items-center">
-                    <div class="region-header">Brainstem</div>
+                    <div class="region-header">Brainstem & Cerebellum</div>
                     <div class="flex justify-center gap-6 w-full px-4">
                         <div id="node-Glu" class="node w-14 h-14 rounded-full flex flex-col items-center justify-center bg-slate-900 border-slate-800"><span class="text-[5px] text-slate-500 uppercase">Glu</span><span class="val font-mono text-[10px] text-yellow-400">0.0</span></div>
                         <div id="node-Ach" class="node w-14 h-14 rounded-full flex flex-col items-center justify-center bg-slate-900 border-dotted border-slate-800"><span class="text-[5px] text-slate-500 uppercase">Ach</span><span class="val font-mono text-[10px] text-cyan-400">0.0</span></div>
@@ -127,6 +138,12 @@
                 <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Metabolic Rate</span><span id="metVal" class="text-lg font-mono text-blue-400">1.0x</span></div>
                 <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Bio-Efficiency</span><span id="bioVal" class="text-lg font-mono text-emerald-400">100%</span></div>
                 <div class="stat-card text-center" id="toxCard"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Total Toxicity</span><span id="toxVal" class="text-lg font-mono text-red-500">0.00</span></div>
+            </div>
+
+            <div class="flex justify-between items-center bg-slate-900/80 p-3 rounded-2xl border border-slate-800 text-[8px] font-bold uppercase tracking-widest">
+                <div class="flex items-center gap-2"><div class="w-3 h-3 bg-emerald-500 rounded-sm"></div><span>Healthy / Homeostasis</span></div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 bg-amber-500 rounded-sm"></div><span>Pathological Stress</span></div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 bg-red-600 rounded-sm"></div><span>Degeneration / Critical Toxicity</span></div>
             </div>
         </div>
 
@@ -142,32 +159,32 @@
     <script>
         const MOA_DATABASE = {
             TNFa: { 
-                inhibit: { sci: "Monoclonal antibody competitive binding (Infliximab/Adalimumab).", bio: "Reduces NF-κB translocation and glial M1 phenotype.", summary: "Abates pro-inflammatory cytokine storm.", hl: 0.99 }, 
-                activate: { sci: "Recombinant human TNF-α cytokine infusion.", bio: "Upregulates TNFR1-mediated apoptotic pathways.", summary: "Drives acute neuroinflammation and necroptosis.", hl: 0.98 } 
+                inhibit: { sci: "Monoclonal antibody competitive binding.", bio: "Reduces NF-κB translocation and glial M1 phenotype.", summary: "Abates pro-inflammatory cytokine storm.", hl: 0.99 }, 
+                activate: { sci: "Recombinant human TNF-α infusion.", bio: "Upregulates TNFR1-mediated apoptotic pathways.", summary: "Drives acute neuroinflammation and necroptosis.", hl: 0.98 } 
             },
             BDNF: { 
-                activate: { sci: "7,8-Dihydroxyflavone or small-molecule TrkB agonists.", bio: "Stimulates PI3K/Akt pathway for neural plasticity.", summary: "Promotes synaptogenesis and neuronal repair.", hl: 0.995 }, 
+                activate: { sci: "7,8-Dihydroxyflavone or TrkB agonists.", bio: "Stimulates PI3K/Akt pathway for neural plasticity.", summary: "Promotes synaptogenesis and neuronal repair.", hl: 0.995 }, 
                 inhibit: { sci: "K252a or ANA-12 TrkB selective antagonism.", bio: "Blocks pro-survival signaling and LTP maintenance.", summary: "Impairs synaptic strengthening and neurogenesis.", hl: 0.99 } 
             },
             Abeta: { 
-                inhibit: { sci: "BACE1 aspartyl protease inhibition or γ-secretase modulators.", bio: "Reduces proteolytic cleavage of Amyloid Precursor Protein (APP).", summary: "Slows oligomeric plaque accumulation.", hl: 0.999 }, 
-                activate: { sci: "Direct stereotaxic infusion of synthetic Aβ42 oligomers.", bio: "Disrupts calcium homeostasis and mitochondrial function.", summary: "Models proteopathic amyloidosis stress.", hl: 0.999 } 
+                inhibit: { sci: "BACE1 inhibition or γ-secretase modulators.", bio: "Reduces proteolytic cleavage of APP.", summary: "Slows oligomeric plaque accumulation.", hl: 0.999 }, 
+                activate: { sci: "Infusion of synthetic Aβ42 oligomers.", bio: "Disrupts calcium homeostasis and mitochondria.", summary: "Models proteopathic amyloidosis stress.", hl: 0.999 } 
             },
             Glu: { 
-                inhibit: { sci: "Memantine-style uncompetitive NMDA receptor antagonism.", bio: "Selectively blocks pathological calcium influx (Excitotoxicity).", summary: "Modulates glutamatergic over-excitation.", hl: 0.98 }, 
-                activate: { sci: "AMPA/NMDA direct receptor agonists.", bio: "Depolarizes postsynaptic membranes and triggers firing.", summary: "Enhances global excitatory neurotransmission.", hl: 0.97 } 
+                inhibit: { sci: "Uncompetitive NMDA receptor antagonism.", bio: "Selectively blocks pathological calcium influx.", summary: "Modulates glutamatergic over-excitation.", hl: 0.98 }, 
+                activate: { sci: "AMPA/NMDA direct receptor agonists.", bio: "Depolarizes postsynaptic membranes.", summary: "Enhances global excitatory neurotransmission.", hl: 0.97 } 
             },
             Tau: { 
-                inhibit: { sci: "Glycogen synthase kinase-3 beta (GSK-3β) inhibition.", bio: "Prevents hyperphosphorylation and microtubule dissociation.", summary: "Inhibits Neurofibrillary Tangle (NFT) formation.", hl: 0.995 }, 
-                activate: { sci: "Okadaic acid or protein phosphatase inhibition.", bio: "Triggers massive tau aggregation and axonal collapse.", summary: "Accelerates structural failure and tangle spread.", hl: 0.99 } 
+                inhibit: { sci: "GSK-3β inhibition.", bio: "Prevents hyperphosphorylation and microtubule dissociation.", summary: "Inhibits NFT formation.", hl: 0.995 }, 
+                activate: { sci: "Protein phosphatase inhibition.", bio: "Triggers massive tau aggregation.", summary: "Accelerates structural failure.", hl: 0.99 } 
             },
             Ach: { 
-                activate: { sci: "Acetylcholinesterase inhibitors (Donepezil/Galantamine).", bio: "Increases synaptic residence time of acetylcholine.", summary: "Strengthens cholinergic memory circuitry.", hl: 0.985 }, 
-                inhibit: { sci: "Scopolamine or muscarinic receptor antagonism.", bio: "Competitively blocks parasympathetic and cognitive signals.", summary: "Attenuates cholinergic signal transmission.", hl: 0.98 } 
+                activate: { sci: "Acetylcholinesterase inhibitors.", bio: "Increases synaptic residence time of Ach.", summary: "Strengthens cholinergic memory circuitry.", hl: 0.985 }, 
+                inhibit: { sci: "Muscarinic receptor antagonism.", bio: "Competitively blocks parasympathetic signals.", summary: "Attenuates cholinergic signal transmission.", hl: 0.98 } 
             },
             ROS: { 
-                inhibit: { sci: "Superoxide dismutase (SOD) mimetics / Nrf2 activators.", bio: "Neutralizes hydroxyl radicals and preserves mitochondrial potential.", summary: "Reduces oxidative stress and lipid peroxidation.", hl: 0.97 }, 
-                activate: { sci: "Rotenone or mitochondrial Complex I uncouplers.", bio: "Leads to cytochrome c release and superoxide leakage.", summary: "Forces oxidative damage and metabolic failure.", hl: 0.96 } 
+                inhibit: { sci: "SOD mimetics / Nrf2 activators.", bio: "Neutralizes hydroxyl radicals.", summary: "Reduces oxidative stress.", hl: 0.97 }, 
+                activate: { sci: "Mitochondrial Complex I uncouplers.", bio: "Leads to cytochrome c release.", summary: "Forces oxidative damage.", hl: 0.96 } 
             }
         };
 
@@ -182,12 +199,13 @@
             huntingtons: { TNFa:0.3, Abeta:0, Tau:0.2, ROS:0.7, Glu:0.6, Ach:0.3, BDNF:0.1, desc: "GABAergic loss and protein aggregation in the striatum." }
         };
 
-        let patient = { age: 45, weight: 75 };
+        let patient = { age: 45, weight: 75, sex: 'male' };
         let activeMolecules = [];
         let currentDisease = "healthy";
         let mainHistoryChart;
         let trialChart;
         let toxAlertActive = false;
+        let latestTrialData = null;
 
         function logToTerminal(msg, isAlert = false) {
             const term = document.getElementById('terminal');
@@ -201,52 +219,44 @@
         setInterval(() => {
             let metRate = 1.0 + ((45 - patient.age) / 60); 
             document.getElementById('metVal').innerText = Math.max(0.4, metRate).toFixed(2) + 'x';
-
             activeMolecules.forEach(mol => {
                 let baseHL = MOA_DATABASE[mol.target][mol.mechanism].hl;
                 mol.dose *= (baseHL - (metRate * 0.0005));
                 if (mol.dose < 0.001) mol.dose = 0;
             });
-
             updateVisuals(false);
         }, 150);
 
-        function runSingleSim(pAge, pWeight) {
+        function runSingleSim(pAge, pWeight, pSex) {
             let ageF = (pAge / 100);
             let baseline = { ...diseaseBase[currentDisease] };
             baseline.Abeta += ageF * 0.12; baseline.TNFa += (pWeight/150) * 0.08;
             let temp = { ...baseline }; let totalTox = 0;
-
+            let sexFactor = pSex === 'female' ? 1.15 : 1.0;
             let bioEfficiency = Math.max(0.4, 1.0 - ((pAge - 20) / 200) - (Math.abs(pWeight - 75) / 500));
             document.getElementById('bioVal').innerText = (bioEfficiency * 100).toFixed(0) + '%';
-
             activeMolecules.forEach(mol => {
                 let eff = mol.dose * bioEfficiency * (75/pWeight);
-                totalTox += (mol.dose ** 2) * 0.5;
+                totalTox += (mol.dose ** 2) * 0.5 * sexFactor;
                 if (mol.mechanism === 'inhibit') temp[mol.target] = Math.max(0, temp[mol.target] - eff);
                 else temp[mol.target] = Math.min(1.2, temp[mol.target] + eff);
             });
-
             let damage = (temp.TNFa * 0.3) + (temp.Abeta * 0.2) + (temp.ROS * 0.2);
             let survival = Math.min(1, Math.max(0, (1.0 + (temp.BDNF * 0.5)) - (damage + (totalTox * 0.4))));
             return { ...temp, Survival: survival, Toxicity: totalTox };
         }
 
         function updateVisuals(isManual = true) {
-            let res = runSingleSim(patient.age, patient.weight);
+            let res = runSingleSim(patient.age, patient.weight, patient.sex);
             ['TNFa', 'Abeta', 'Tau', 'Glu', 'Ach', 'BDNF', 'ROS'].forEach(id => {
                 document.getElementById(`node-${id}`).querySelector('.val').innerText = res[id].toFixed(2);
             });
             document.getElementById('node-Survival').querySelector('.val').innerText = (res.Survival * 100).toFixed(0) + '%';
             document.getElementById('toxVal').innerText = res.Toxicity.toFixed(3);
             
-            // Toxicity Guardrail
             if (res.Toxicity > 0.150) {
                 document.getElementById('heat-bst').classList.add('tox-warning');
-                if (!toxAlertActive) {
-                    logToTerminal("CRITICAL: TOXICITY THRESHOLD EXCEEDED. MITIGATE DOSAGE.", true);
-                    toxAlertActive = true;
-                }
+                if (!toxAlertActive) { logToTerminal("CRITICAL: TOXICITY THRESHOLD EXCEEDED.", true); toxAlertActive = true; }
             } else {
                 document.getElementById('heat-bst').classList.remove('tox-warning');
                 toxAlertActive = false;
@@ -294,28 +304,27 @@
                     </div>
                     <input type="range" id="slider-${i}" min="0" max="1.5" step="0.01" value="${m.dose}" oninput="activeMolecules[${i}].dose=parseFloat(this.value); updateVisuals();" class="w-full">
                     <div class="moa-box">
-                        <span class="text-[7px] font-black text-blue-400 uppercase block mb-1">Pharmacological Profile</span>
                         <p class="text-[9px] text-slate-300 font-bold">${MOA_DATABASE[m.target][m.mechanism].summary}</p>
-                        <div class="sci-text"><b>Mechanism:</b> ${MOA_DATABASE[m.target][m.mechanism].bio}<br><b>MOA:</b> ${MOA_DATABASE[m.target][m.mechanism].sci}</div>
+                        <div class="sci-text"><b>Mechanism:</b> ${MOA_DATABASE[m.target][m.mechanism].bio}</div>
                     </div>
                 </div>
             `).join('');
         }
 
         function optimizeDosage() {
-            logToTerminal(`Analyzing Pathology: ${currentDisease.toUpperCase()}...`);
             if (currentDisease === "healthy") {
                 activeMolecules = [];
-                logToTerminal("Healthy baseline detected. Zero dosage recommended.");
+                logToTerminal("Healthy baseline. No drugs prescribed.");
             } else {
                 let base = diseaseBase[currentDisease];
+                let sf = patient.sex === 'female' ? 0.85 : 1.0;
                 activeMolecules = [];
-                if (base.TNFa > 0.3) activeMolecules.push({ name: "Anti-TNF", target: "TNFa", mechanism: "inhibit", dose: 0.55 });
-                if (base.Abeta > 0.4) activeMolecules.push({ name: "Amyloid-X", target: "Abeta", mechanism: "inhibit", dose: 0.65 });
-                if (base.ROS > 0.4) activeMolecules.push({ name: "Nrf2-S", target: "ROS", mechanism: "inhibit", dose: 0.45 });
-                if (base.BDNF < 0.5) activeMolecules.push({ name: "TrkB-Plus", target: "BDNF", mechanism: "activate", dose: 0.7 });
-                if (base.Ach < 0.5) activeMolecules.push({ name: "Ch-E-Inhib", target: "Ach", mechanism: "activate", dose: 0.4 });
-                logToTerminal(`Protocol for ${currentDisease} applied within safety margins.`);
+                if (base.TNFa > 0.3) activeMolecules.push({ name: "Anti-TNF", target: "TNFa", mechanism: "inhibit", dose: 0.5 * sf });
+                if (base.Abeta > 0.4) activeMolecules.push({ name: "Amyloid-X", target: "Abeta", mechanism: "inhibit", dose: 0.6 * sf });
+                if (base.ROS > 0.4) activeMolecules.push({ name: "Nrf2-S", target: "ROS", mechanism: "inhibit", dose: 0.4 * sf });
+                if (base.BDNF < 0.5) activeMolecules.push({ name: "TrkB-Plus", target: "BDNF", mechanism: "activate", dose: 0.6 * sf });
+                if (base.Ach < 0.5) activeMolecules.push({ name: "Ch-E-Inhib", target: "Ach", mechanism: "activate", dose: 0.35 * sf });
+                logToTerminal(`Optimized for ${patient.sex} profile.`);
             }
             renderRack();
             updateVisuals();
@@ -324,12 +333,14 @@
         function runTrial() {
             document.getElementById('trialModal').style.display = 'flex';
             const results = Array.from({length: 100}, () => {
-                let randAge = 18 + Math.random() * 77;
-                let randWeight = 50 + Math.random() * 80;
-                return runSingleSim(randAge, randWeight);
+                let rAge = 18 + Math.random() * 77;
+                let rWeight = 50 + Math.random() * 80;
+                let rSex = Math.random() > 0.5 ? 'male' : 'female';
+                return runSingleSim(rAge, rWeight, rSex);
             });
             const avgSurv = results.reduce((a,b) => a + b.Survival, 0) / 100;
             const avgTox = results.reduce((a,b) => a + b.Toxicity, 0) / 100;
+            latestTrialData = { avgSurv, avgTox, disease: currentDisease, timestamp: new Date().toISOString() };
             document.getElementById('successRate').innerText = (avgSurv * 100).toFixed(1) + '%';
             document.getElementById('meanTox').innerText = avgTox.toFixed(2);
             document.getElementById('metLoad').innerText = (1 + ((45 - patient.age) / 60)).toFixed(2);
@@ -337,36 +348,33 @@
             if(!trialChart) {
                 const tCtx = document.getElementById('trialChart').getContext('2d');
                 trialChart = new Chart(tCtx, { type:'bar', data: { labels: results.map((_,i)=>i), datasets: [{ data: results.map(r=>r.Survival), backgroundColor: '#10b981' }] }, options: { maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{min:0, max:1}} } });
-            } else {
-                trialChart.data.datasets[0].data = results.map(r=>r.Survival);
-                trialChart.update();
-            }
+            } else { trialChart.data.datasets[0].data = results.map(r=>r.Survival); trialChart.update(); }
+        }
+
+        function downloadReport() {
+            if (!latestTrialData) return;
+            const content = `SynaptoCAD PHASE II REPORT\nDate: ${latestTrialData.timestamp}\nPathology: ${latestTrialData.disease}\n---\nMean Viability: ${(latestTrialData.avgSurv*100).toFixed(2)}%\nMean Toxicity: ${latestTrialData.avgTox.toFixed(4)}`;
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `Trial_${latestTrialData.disease}.txt`; a.click();
         }
 
         function closeTrial() { document.getElementById('trialModal').style.display = 'none'; }
         function updateDemographics() {
             patient.age = parseInt(document.getElementById('age').value);
             patient.weight = parseInt(document.getElementById('weight').value);
+            patient.sex = document.getElementById('patientSex').value;
             document.getElementById('ageDisp').innerText = patient.age + 'y';
             document.getElementById('weightDisp').innerText = patient.weight + 'kg';
             updateVisuals();
         }
-        function applyDisease() { 
-            currentDisease = document.getElementById('diseasePreset').value; 
-            logToTerminal(`Case: ${diseaseBase[currentDisease].desc}`);
-            updateVisuals(); 
-        }
-        function addNewMolecule() { 
-            activeMolecules.push({ name: "Compound", target: "TNFa", mechanism: "inhibit", dose: 0.1 }); 
-            renderRack(); 
-            updateVisuals(); 
-            logToTerminal("New experimental agent added to Matrix.");
-        }
+        function applyDisease() { currentDisease = document.getElementById('diseasePreset').value; logToTerminal(`Case: ${diseaseBase[currentDisease].desc}`); updateVisuals(); }
+        function addNewMolecule() { activeMolecules.push({ name: "Compound", target: "TNFa", mechanism: "inhibit", dose: 0.1 }); renderRack(); updateVisuals(); }
 
         const hCtx = document.getElementById('phenotypeChart').getContext('2d');
         mainHistoryChart = new Chart(hCtx, { type:'line', data:{ labels:Array(50).fill(''), datasets:[{ data:Array(50).fill(1), borderColor:'#10b981', tension:0.1, pointRadius:0, borderWidth:2 }] }, options:{ maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{min:0, max:1}} } });
 
-        logToTerminal("SynaptoCAD v5.9 initialized. Monitoring neural nodes...");
         updateVisuals();
     </script>
 </body>
