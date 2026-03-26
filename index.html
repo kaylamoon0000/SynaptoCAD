@@ -74,7 +74,10 @@
             <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 shadow-2xl h-full flex flex-col">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Intervention Matrix</h2>
-                    <button onclick="addNewMolecule()" class="text-[9px] bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 hover:bg-blue-600 hover:text-white transition font-bold uppercase">+ Add Agent</button>
+                    <div class="flex gap-2">
+                        <button onclick="optimizeDosage()" class="text-[9px] bg-emerald-600/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30 hover:bg-emerald-600 hover:text-white transition font-bold uppercase">Optimize</button>
+                        <button onclick="addNewMolecule()" class="text-[9px] bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 hover:bg-blue-600 hover:text-white transition font-bold uppercase">+ Add Agent</button>
+                    </div>
                 </div>
                 <div id="moleculeRack" class="space-y-4 overflow-y-auto pr-2 flex-grow max-h-[78vh]"></div>
             </div>
@@ -134,13 +137,34 @@
 
     <script>
         const MOA_DATABASE = {
-            TNFa: { inhibit: { sci: "Monoclonal antibody binding of soluble TNF-α.", bio: "Suppresses M1 polarization.", summary: "Reduces neuroinflammation.", hl: 0.99 }, activate: { sci: "Exogenous recombinant TNF infusion.", bio: "Triggers caspase-3 apoptosis.", summary: "Elevates cytokine flux.", hl: 0.98 } },
-            BDNF: { activate: { sci: "Small-molecule TrkB agonist.", bio: "Promotes synaptogenesis.", summary: "Enhances neural growth.", hl: 0.995 }, inhibit: { sci: "Selective TrkB antagonist (ANA-12).", bio: "Suppresses LTP.", summary: "Suppresses plasticity.", hl: 0.99 } },
-            Abeta: { inhibit: { sci: "BACE1 aspartyl protease inhibition.", bio: "Reduces Aβ42 production.", summary: "Limits amyloid aggregation.", hl: 0.999 }, activate: { sci: "Seeding with exogenous Aβ oligomers.", bio: "Induces proteopathic stress.", summary: "Increases plaque formation.", hl: 0.999 } },
-            Glu: { inhibit: { sci: "Uncompetitive NMDA antagonist.", bio: "Blocks excessive Ca2+ influx.", summary: "Regulates over-excitation.", hl: 0.98 }, activate: { sci: "Direct glutamatergic agonist.", bio: "Promotes depolarization.", summary: "Increases global firing.", hl: 0.97 } },
-            Tau: { inhibit: { sci: "Microtubule-stabilizing agents.", bio: "Halts hyperphosphorylation.", summary: "Prevents tangles.", hl: 0.995 }, activate: { sci: "Induces hyperphosphorylation.", bio: "Accelerates NFT formation.", summary: "Accelerates structural failure.", hl: 0.99 } },
-            Ach: { activate: { sci: "AChE inhibitor.", bio: "Potentiates transmission.", summary: "Strengthens memory signals.", hl: 0.985 }, inhibit: { sci: "Muscarinic antagonist.", bio: "Impairs memory consolidation.", summary: "Attenuates signaling.", hl: 0.98 } },
-            ROS: { inhibit: { sci: "SOD/Catalase mimetic.", bio: "Preserves ΔΨm potential.", summary: "Prevents oxidative damage.", hl: 0.97 }, activate: { sci: "Mitochondrial uncoupler.", bio: "Drives apoptotic leak.", summary: "Increases free radical damage.", hl: 0.96 } }
+            TNFa: { 
+                inhibit: { sci: "Monoclonal antibody binding of soluble TNF-α.", bio: "Suppresses M1 polarization.", summary: "Reduces neuroinflammation.", hl: 0.99 }, 
+                activate: { sci: "Exogenous recombinant TNF infusion.", bio: "Triggers caspase-3 apoptosis.", summary: "Elevates cytokine flux.", hl: 0.98 } 
+            },
+            BDNF: { 
+                activate: { sci: "Small-molecule TrkB agonist.", bio: "Promotes synaptogenesis.", summary: "Enhances neural growth.", hl: 0.995 }, 
+                inhibit: { sci: "Selective TrkB antagonist (ANA-12).", bio: "Suppresses LTP.", summary: "Suppresses plasticity.", hl: 0.99 } 
+            },
+            Abeta: { 
+                inhibit: { sci: "BACE1 aspartyl protease inhibition.", bio: "Reduces Aβ42 production.", summary: "Limits amyloid aggregation.", hl: 0.999 }, 
+                activate: { sci: "Seeding with exogenous Aβ oligomers.", bio: "Induces proteopathic stress.", summary: "Increases plaque formation.", hl: 0.999 } 
+            },
+            Glu: { 
+                inhibit: { sci: "Uncompetitive NMDA antagonist.", bio: "Blocks excessive Ca2+ influx.", summary: "Regulates over-excitation.", hl: 0.98 }, 
+                activate: { sci: "Direct glutamatergic agonist.", bio: "Promotes depolarization.", summary: "Increases global firing.", hl: 0.97 } 
+            },
+            Tau: { 
+                inhibit: { sci: "Microtubule-stabilizing agents.", bio: "Halts hyperphosphorylation.", summary: "Prevents tangles.", hl: 0.995 }, 
+                activate: { sci: "Induces hyperphosphorylation.", bio: "Accelerates NFT formation.", summary: "Accelerates structural failure.", hl: 0.99 } 
+            },
+            Ach: { 
+                activate: { sci: "AChE inhibitor.", bio: "Potentiates transmission.", summary: "Strengthens memory signals.", hl: 0.985 }, 
+                inhibit: { sci: "Muscarinic antagonist.", bio: "Impairs memory consolidation.", summary: "Attenuates signaling.", hl: 0.98 } 
+            },
+            ROS: { 
+                inhibit: { sci: "SOD/Catalase mimetic.", bio: "Preserves ΔΨm potential.", summary: "Prevents oxidative damage.", hl: 0.97 }, 
+                activate: { sci: "Mitochondrial uncoupler.", bio: "Drives apoptotic leak.", summary: "Increases free radical damage.", hl: 0.96 } 
+            }
         };
 
         const diseaseBase = {
@@ -158,18 +182,28 @@
         let mainHistoryChart;
         let trialChart;
 
-        // DECAY LOOP
+        function logToTerminal(msg) {
+            const term = document.getElementById('terminal');
+            const line = document.createElement('div');
+            line.className = "mb-1";
+            line.innerHTML = `<span class="text-slate-600">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            term.prepend(line);
+            if (term.childNodes.length > 50) term.lastChild.remove();
+        }
+
         setInterval(() => {
-            // METABOLIC CORRECTION: Young people (18) = High Rate (1.5x), Old people (95) = Low Rate (0.6x)
             let metRate = 1.0 + ((45 - patient.age) / 60); 
             document.getElementById('metVal').innerText = Math.max(0.4, metRate).toFixed(2) + 'x';
 
             activeMolecules.forEach(mol => {
                 let baseHL = MOA_DATABASE[mol.target][mol.mechanism].hl;
-                // Higher metabolism = more aggressive subtraction from the Half-Life constant
                 mol.dose *= (baseHL - (metRate * 0.0005));
                 if (mol.dose < 0.001) mol.dose = 0;
             });
+
+            if (activeMolecules.length > 0 && Math.random() > 0.9) {
+                logToTerminal(`Systemic Clearance Active: ${metRate.toFixed(2)}x BMR Scaling.`);
+            }
             updateVisuals(false);
         }, 150);
 
@@ -179,7 +213,6 @@
             baseline.Abeta += ageF * 0.12; baseline.TNFa += (pWeight/150) * 0.08;
             let temp = { ...baseline }; let totalTox = 0;
 
-            // BIO-EFFICIENCY: Declines with age and extreme body mass
             let bioEfficiency = Math.max(0.4, 1.0 - ((pAge - 20) / 200) - (Math.abs(pWeight - 75) / 500));
             document.getElementById('bioVal').innerText = (bioEfficiency * 100).toFixed(0) + '%';
 
@@ -235,10 +268,10 @@
                         <button onclick="activeMolecules.splice(${i},1); renderRack();" class="text-slate-600 font-bold">✕</button>
                     </div>
                     <div class="flex gap-2 mb-3">
-                        <select onchange="activeMolecules[${i}].target=this.value; updateVisuals()" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 w-full">
+                        <select onchange="activeMolecules[${i}].target=this.value; renderRack(); updateVisuals()" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 w-full">
                             ${Object.keys(MOA_DATABASE).map(k => `<option value="${k}" ${m.target === k ? 'selected' : ''}>${k}</option>`).join('')}
                         </select>
-                        <select onchange="activeMolecules[${i}].mechanism=this.value; updateVisuals()" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 w-full">
+                        <select onchange="activeMolecules[${i}].mechanism=this.value; renderRack(); updateVisuals()" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 w-full">
                             <option value="inhibit" ${m.mechanism === 'inhibit' ? 'selected' : ''}>Inhibit</option>
                             <option value="activate" ${m.mechanism === 'activate' ? 'selected' : ''}>Agonist</option>
                         </select>
@@ -251,6 +284,16 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        function optimizeDosage() {
+            logToTerminal("Calculating Optimal Cell Viability dosage...");
+            activeMolecules.forEach(m => {
+                if (m.mechanism === 'inhibit' && (m.target === 'TNFa' || m.target === 'Abeta' || m.target === 'ROS')) m.dose = 0.85;
+                if (m.mechanism === 'activate' && m.target === 'BDNF') m.dose = 1.2;
+            });
+            updateVisuals();
+            logToTerminal("Dosage optimized for survival vs toxicity threshold.");
         }
 
         function runTrial() {
@@ -281,14 +324,25 @@
             patient.weight = parseInt(document.getElementById('weight').value);
             document.getElementById('ageDisp').innerText = patient.age + 'y';
             document.getElementById('weightDisp').innerText = patient.weight + 'kg';
+            logToTerminal(`Profile Updated: ${patient.age}y / ${patient.weight}kg. Adjusting Kinetics.`);
             updateVisuals();
         }
-        function applyDisease() { currentDisease = document.getElementById('diseasePreset').value; updateVisuals(); }
-        function addNewMolecule() { activeMolecules.push({ name: "Compound", target: "TNFa", mechanism: "inhibit", dose: 0.1 }); renderRack(); updateVisuals(); }
+        function applyDisease() { 
+            currentDisease = document.getElementById('diseasePreset').value; 
+            logToTerminal(`Pathology Set: ${currentDisease.toUpperCase()}.`);
+            updateVisuals(); 
+        }
+        function addNewMolecule() { 
+            activeMolecules.push({ name: "Compound", target: "TNFa", mechanism: "inhibit", dose: 0.1 }); 
+            renderRack(); 
+            updateVisuals(); 
+            logToTerminal("New experimental agent added to Matrix.");
+        }
 
         const hCtx = document.getElementById('phenotypeChart').getContext('2d');
         mainHistoryChart = new Chart(hCtx, { type:'line', data:{ labels:Array(50).fill(''), datasets:[{ data:Array(50).fill(1), borderColor:'#10b981', tension:0.1, pointRadius:0, borderWidth:2 }] }, options:{ maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{min:0, max:1}} } });
 
+        logToTerminal("SynaptoCAD v5.9 initialized. Monitoring neural nodes...");
         updateVisuals();
     </script>
 </body>
