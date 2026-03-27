@@ -199,7 +199,7 @@
 
         function manualOverride(id, val) {
             manualOverrides[id] = parseFloat(val);
-            logToTerminal(`Override: ${id} set to ${val}`);
+            logToTerminal(`System Alert: Manual Override for ${id} set to ${val}`);
             updateVisuals();
         }
 
@@ -207,7 +207,7 @@
             patient.sex = (patient.sex === 'male' ? 'female' : 'male');
             document.getElementById('sexToggle').classList.toggle('female');
             document.getElementById('sexToggle').querySelector('.toggle-slider').innerText = (patient.sex === 'male' ? 'XY' : 'XX');
-            logToTerminal(`System sex toggle: ${patient.sex.toUpperCase()}`);
+            logToTerminal(`Physiology: Patient Sex toggled to ${patient.sex.toUpperCase()}`);
             updateVisuals();
         }
 
@@ -216,14 +216,14 @@
             patient.weight = parseInt(document.getElementById('weight').value);
             document.getElementById('ageDisp').innerText = patient.age + 'y';
             document.getElementById('weightDisp').innerText = patient.weight + 'kg';
-            logToTerminal(`Physiology Shift: Age ${patient.age} / Weight ${patient.weight}`);
+            logToTerminal(`Physiology: Age ${patient.age}y / Weight ${patient.weight}kg`);
             updateVisuals();
         }
 
         function applyDisease() {
             currentDisease = document.getElementById('diseasePreset').value;
             manualOverrides = {};
-            logToTerminal(`New Environment Mapping: ${currentDisease.toUpperCase()}`);
+            logToTerminal(`Environment: Initialized ${currentDisease.toUpperCase()}`);
             updateVisuals();
         }
 
@@ -270,14 +270,14 @@
             rack.innerHTML = activeMolecules.map((m, i) => `
                 <div class="bg-slate-800/40 p-4 rounded-2xl border border-slate-700">
                     <div class="flex justify-between items-center mb-3">
-                        <input type="text" value="${m.name}" onchange="activeMolecules[${i}].name=this.value" class="bg-transparent text-[10px] font-bold text-blue-300 outline-none">
-                        <button onclick="activeMolecules.splice(${i},1); renderRack();" class="text-slate-600">✕</button>
+                        <input type="text" value="${m.name}" onchange="activeMolecules[${i}].name=this.value; logToTerminal('Agent: Renamed to '+this.value)" class="bg-transparent text-[10px] font-bold text-blue-300 outline-none">
+                        <button onclick="activeMolecules.splice(${i},1); renderRack(); logToTerminal('Agent: Removed '+m.name)" class="text-slate-600">✕</button>
                     </div>
                     <div class="grid grid-cols-2 gap-2 mb-4">
-                        <select onchange="activeMolecules[${i}].target=this.value; renderRack();" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 text-white">
+                        <select onchange="activeMolecules[${i}].target=this.value; renderRack(); logToTerminal('Agent: '+m.name+' target set to '+this.value)" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 text-white">
                             ${Object.keys(MOA_DATABASE).map(k => `<option value="${k}" ${m.target === k ? 'selected' : ''}>${k}</option>`).join('')}
                         </select>
-                        <select onchange="activeMolecules[${i}].mechanism=this.value; renderRack();" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 text-white">
+                        <select onchange="activeMolecules[${i}].mechanism=this.value; renderRack(); logToTerminal('Agent: '+m.name+' mechanism set to '+this.value)" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 text-white">
                             <option value="inhibit" ${m.mechanism === 'inhibit' ? 'selected' : ''}>Inhibit</option>
                             <option value="activate" ${m.mechanism === 'activate' ? 'selected' : ''}>Agonist</option>
                         </select>
@@ -285,12 +285,12 @@
                     <div class="space-y-4">
                         <div class="flex flex-col">
                             <span class="designer-label">Concentration (Dose)</span>
-                            <input type="range" min="0" max="1.5" step="0.01" value="${m.dose}" oninput="activeMolecules[${i}].dose=parseFloat(this.value); updateVisuals();">
+                            <input type="range" min="0" max="1.5" step="0.01" value="${m.dose}" oninput="activeMolecules[${i}].dose=parseFloat(this.value); updateVisuals();" onchange="logToTerminal('Agent: '+m.name+' Dose set to '+this.value)">
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            <div><span class="designer-label">Affinity</span><input type="range" min="0.1" max="1.5" step="0.01" value="${m.affinity}" oninput="activeMolecules[${i}].affinity=parseFloat(this.value); updateVisuals();"></div>
-                            <div><span class="designer-label">Specificity</span><input type="range" min="0.5" max="1.0" step="0.01" value="${m.specificity}" oninput="activeMolecules[${i}].specificity=parseFloat(this.value); updateVisuals();"></div>
-                            <div><span class="designer-label">Half-Life</span><input type="range" min="0.95" max="0.99" step="0.001" value="${m.halfLife}" oninput="activeMolecules[${i}].halfLife=parseFloat(this.value); updateVisuals();"></div>
+                            <div><span class="designer-label">Affinity</span><input type="range" min="0.1" max="1.5" step="0.01" value="${m.affinity}" oninput="activeMolecules[${i}].affinity=parseFloat(this.value); updateVisuals();" onchange="logToTerminal('Agent: '+m.name+' Affinity set to '+this.value)"></div>
+                            <div><span class="designer-label">Specificity</span><input type="range" min="0.5" max="1.0" step="0.01" value="${m.specificity}" oninput="activeMolecules[${i}].specificity=parseFloat(this.value); updateVisuals();" onchange="logToTerminal('Agent: '+m.name+' Specificity set to '+this.value)"></div>
+                            <div><span class="designer-label">Half-Life</span><input type="range" min="0.95" max="0.99" step="0.001" value="${m.halfLife}" oninput="activeMolecules[${i}].halfLife=parseFloat(this.value); updateVisuals();" onchange="logToTerminal('Agent: '+m.name+' Half-Life set to '+this.value)"></div>
                         </div>
                     </div>
                     <div class="moa-box">${MOA_DATABASE[m.target][m.mechanism].summary}</div>
@@ -299,16 +299,25 @@
         }
 
         function optimizeDosage() {
-            logToTerminal("Calculating Optimal Engineering Specs...");
+            logToTerminal("Optimization: Calculating optimal Spec-Profile...");
             let base = diseaseBase[currentDisease];
             activeMolecules = [];
-            if (base.TNFa > 0.4) activeMolecules.push({ name: "Cytokine-mAb", target: "TNFa", mechanism: "inhibit", dose: 0.65, affinity: 0.4, specificity: 0.98, halfLife: 0.998 });
-            if (base.Abeta > 0.5) activeMolecules.push({ name: "BACE1-Mod", target: "Abeta", mechanism: "inhibit", dose: 0.75, affinity: 0.3, specificity: 0.96, halfLife: 0.999 });
+            
+            // Logic to ensure treatment is recommended for actual pathologies
+            if (currentDisease !== 'healthy') {
+                if (base.TNFa > 0.3) activeMolecules.push({ name: "Anti-Cytokine", target: "TNFa", mechanism: "inhibit", dose: 0.6, affinity: 0.4, specificity: 0.98, halfLife: 0.998 });
+                if (base.Abeta > 0.3) activeMolecules.push({ name: "BACE-Inhibitor", target: "Abeta", mechanism: "inhibit", dose: 0.7, affinity: 0.3, specificity: 0.96, halfLife: 0.999 });
+                if (base.BDNF < 0.6) activeMolecules.push({ name: "TrkB-Agonist", target: "BDNF", mechanism: "activate", dose: 0.4, affinity: 0.5, specificity: 0.92, halfLife: 0.995 });
+                if (base.ROS > 0.4) activeMolecules.push({ name: "Redox-Buff", target: "ROS", mechanism: "inhibit", dose: 0.5, affinity: 0.6, specificity: 0.94, halfLife: 0.997 });
+                logToTerminal(`Optimization: Generated ${activeMolecules.length} agents for ${currentDisease.toUpperCase()}.`);
+            } else {
+                logToTerminal("Optimization: Patient Healthy. No treatment recommended.");
+            }
             renderRack(); updateVisuals();
         }
 
         function runTrial() {
-            logToTerminal(`Initializing Phase II Simulation for ${currentDisease.toUpperCase()}...`);
+            logToTerminal("Phase II: Commencing N=100 Simulation...");
             document.getElementById('trialModal').style.display = 'flex';
             trialResults = Array.from({length: 100}, (_, i) => {
                 let rAge = 18 + Math.random() * 75, rWeight = 45 + Math.random() * 90, rSex = Math.random() > 0.5 ? 'male' : 'female';
@@ -338,7 +347,11 @@
         }
 
         function closeTrial() { document.getElementById('trialModal').style.display = 'none'; }
-        function addNewMolecule() { activeMolecules.push({ name: "Molecule-X", target: "TNFa", mechanism: "inhibit", dose: 0.2, affinity: 1.0, specificity: 0.9, halfLife: 0.98 }); renderRack(); }
+        function addNewMolecule() { 
+            activeMolecules.push({ name: "Agent-V", target: "TNFa", mechanism: "inhibit", dose: 0.2, affinity: 1.0, specificity: 0.9, halfLife: 0.98 }); 
+            logToTerminal("Agent: New manual sequence added.");
+            renderRack(); 
+        }
         
         populateNodeDropdowns();
         const hCtx = document.getElementById('phenotypeChart').getContext('2d');
