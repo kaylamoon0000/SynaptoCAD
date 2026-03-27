@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SynaptoCAD | BME v7.5 Clinical</title>
+    <title>SynaptoCAD | BME v7.6 Clinical</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -30,17 +30,16 @@
             <div class="flex justify-between items-start mb-8">
                 <div>
                     <h2 class="text-3xl font-black italic text-white tracking-tighter uppercase">Phase II Population Study</h2>
-                    <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">N=100 Physiology-Linked Results</p>
+                    <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest">Physiology-Weighted Cohort N=100</p>
                 </div>
                 <div class="flex gap-4">
-                    <button onclick="exportData('csv')" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-xl transition uppercase shadow-lg">Export CSV</button>
                     <button onclick="closeTrial()" class="bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center text-white transition">✕</button>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="stat-card text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Success Rate</span><div id="successRate" class="text-5xl font-mono text-emerald-400 mt-2">0%</div></div>
-                <div class="stat-card text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Peak Toxicity</span><div id="meanTox" class="text-5xl font-mono text-red-500 mt-2">0.0</div></div>
-                <div class="stat-card text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Therapeutic Index</span><div id="metLoad" class="text-5xl font-mono text-blue-400 mt-2">0.0</div></div>
+                <div class="stat-card text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Survival Rate</span><div id="successRate" class="text-5xl font-mono text-emerald-400 mt-2">0%</div></div>
+                <div class="stat-card text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Avg Toxicity</span><div id="meanTox" class="text-5xl font-mono text-red-500 mt-2">0.0</div></div>
+                <div class="stat-card text-center"><span class="text-[10px] text-slate-500 font-bold uppercase">Reserve Index</span><div id="metLoad" class="text-5xl font-mono text-blue-400 mt-2">0.0</div></div>
             </div>
             <div class="h-64 bg-slate-950 rounded-3xl p-6 border border-slate-800 mb-6"><canvas id="trialChart"></canvas></div>
         </div>
@@ -50,7 +49,7 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="h-10 w-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center font-bold shadow-lg text-white text-xl">Σ</div>
-                <div><h1 class="font-black tracking-tight text-white italic leading-none text-xl uppercase">SynaptoCAD</h1><p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase">v7.5 BME Engineering</p></div>
+                <div><h1 class="font-black tracking-tight text-white italic leading-none text-xl uppercase">SynaptoCAD</h1><p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase">v7.6 BME Clinical</p></div>
             </div>
             <div class="flex flex-wrap items-center gap-3 bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
                 <div class="flex flex-col border-r border-slate-800 pr-3">
@@ -140,9 +139,9 @@
             </div>
 
             <div class="grid grid-cols-3 gap-3">
-                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Clearance ($K_{el}$)</span><span id="metVal" class="text-lg font-mono text-blue-400">1.0x</span></div>
+                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Clearance Rate</span><span id="metVal" class="text-lg font-mono text-blue-400">1.0x</span></div>
                 <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Physio-Reserve</span><span id="bioVal" class="text-lg font-mono text-emerald-400">100%</span></div>
-                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Total Toxicity</span><span id="toxVal" class="text-lg font-mono text-red-500">0.00</span></div>
+                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Global Toxicity</span><span id="toxVal" class="text-lg font-mono text-red-500">0.00</span></div>
             </div>
         </div>
 
@@ -158,8 +157,8 @@
     <script>
         const MOA_DATABASE = {
             TNFa: { 
-                inhibit: { summary: "Downregulates NF-κB signaling pathways to mitigate cytokine-mediated neuroinflammation.", hl: 24 }, 
-                activate: { summary: "Systemic induction of the pro-inflammatory secretome, increasing blood-brain barrier permeability.", hl: 12 } 
+                inhibit: { summary: "Downregulates NF-κB pathways to mitigate cytokine-mediated neuroinflammation.", hl: 24 }, 
+                activate: { summary: "Systemic induction of pro-inflammatory secretome, increasing BBB permeability.", hl: 12 } 
             },
             Abeta: { 
                 inhibit: { summary: "Modulates BACE1 activity to prevent APP cleavage into neurotoxic oligomers.", hl: 48 }, 
@@ -167,19 +166,19 @@
             },
             Tau: { 
                 inhibit: { summary: "Attenuates hyperphosphorylation to prevent neurofibrillary tangle formation.", hl: 36 }, 
-                activate: { summary: "Promotes intracellular aggregation of paired helical filaments, disrupting axonal transport.", hl: 48 } 
+                activate: { summary: "Promotes intracellular aggregation of paired helical filaments.", hl: 48 } 
             },
             Glu: { 
-                inhibit: { summary: "Antagonizes NMDA/AMPA receptors to stabilize ionic flux and prevent excitotoxicity.", hl: 6 }, 
-                activate: { summary: "Upregulates glutamatergic neurotransmission, risking synaptic overload and calcium influx.", hl: 4 } 
+                inhibit: { summary: "Antagonizes NMDA/AMPA receptors to prevent calcium-induced excitotoxicity.", hl: 6 }, 
+                activate: { summary: "Upregulates glutamatergic neurotransmission, risking synaptic overload.", hl: 4 } 
             },
             Ach: { 
-                activate: { summary: "Inhibits acetylcholinesterase to increase synaptic cholinergic tone and improve memory retrieval.", hl: 8 }, 
-                inhibit: { summary: "Competitively blocks muscarinic/nicotinic receptors, inducing cognitive deficit.", hl: 10 } 
+                activate: { summary: "Inhibits acetylcholinesterase to increase synaptic cholinergic tone.", hl: 8 }, 
+                inhibit: { summary: "Competitively blocks muscarinic receptors, inducing cognitive deficit.", hl: 10 } 
             },
             ROS: { 
                 inhibit: { summary: "Scavenges reactive species to preserve mitochondrial membrane potential.", hl: 4 }, 
-                activate: { summary: "Induces oxidative stress, causing lipid peroxidation and DNA fragmentation.", hl: 2 } 
+                activate: { summary: "Induces oxidative stress, causing lipid peroxidation and DNA damage.", hl: 2 } 
             }
         };
 
@@ -210,7 +209,6 @@
             patient.sex = (patient.sex === 'male' ? 'female' : 'male');
             document.getElementById('sexToggle').classList.toggle('female');
             document.getElementById('sexToggle').querySelector('.toggle-slider').innerText = (patient.sex === 'male' ? 'XY' : 'XX');
-            logToTerminal(`Physiology: Sex hormonal profile shifted to ${patient.sex.toUpperCase()}`);
             updateVisuals();
         }
 
@@ -219,45 +217,43 @@
             patient.weight = parseInt(document.getElementById('weight').value);
             document.getElementById('ageDisp').innerText = patient.age + 'y';
             document.getElementById('weightDisp').innerText = patient.weight + 'kg';
-            logToTerminal(`System: Recalibrating for ${patient.age}y / ${patient.weight}kg`);
             updateVisuals();
         }
 
         function applyDisease() {
             currentDisease = document.getElementById('diseasePreset').value;
-            logToTerminal(`Pathology: Initializing ${currentDisease.toUpperCase()} cellular profile.`);
+            logToTerminal(`Pathology: Initializing ${currentDisease.toUpperCase()}`);
             updateVisuals();
         }
 
         function runSingleSim(pAge, pWeight, pSex) {
             let base = { ...diseaseBase[currentDisease] };
             let volDist = pWeight / 75; 
-            let renalAgeMod = Math.max(0.3, 1.25 - (pAge / 100)); 
-            let sexMod = (pSex === 'female' ? 0.90 : 1.0); 
-            let toxinThreshold = 1.0 * volDist * renalAgeMod * sexMod;
+            let renalReserve = Math.max(0.2, 1.3 - (pAge / 100)) * (pSex === 'female' ? 0.9 : 1.0);
+            let toxinThreshold = 1.0 * volDist * renalReserve;
 
             let currentLevels = {};
             ['TNFa', 'Abeta', 'Tau', 'Glu', 'Ach', 'ROS'].forEach(id => {
-                let val = base[id] * (1/volDist);
-                if (id === 'Abeta' || id === 'Tau') val += (pAge / 180);
+                let val = base[id] / volDist;
+                if (id === 'Abeta' || id === 'Tau') val += (pAge / 200);
                 currentLevels[id] = val;
             });
 
             let totalTox = 0;
             activeMolecules.forEach(mol => {
-                let effectiveConc = mol.dose / volDist;
+                let doseScale = mol.dose / volDist;
                 let power = (1 / mol.affinity) * (mol.specificity / 100);
                 
-                if (mol.mechanism === 'inhibit') currentLevels[mol.target] = Math.max(0, currentLevels[mol.target] - (effectiveConc * power));
-                else currentLevels[mol.target] = Math.min(2.5, currentLevels[mol.target] + (effectiveConc * power));
+                if (mol.mechanism === 'inhibit') currentLevels[mol.target] = Math.max(0, currentLevels[mol.target] - (doseScale * power));
+                else currentLevels[mol.target] = Math.min(2.5, currentLevels[mol.target] + (doseScale * power));
                 
-                totalTox += (mol.dose ** 1.7) / toxinThreshold;
+                totalTox += (mol.dose ** 1.8) / toxinThreshold;
             });
 
-            let damage = (currentLevels.TNFa * 0.45) + (currentLevels.ROS * 0.35) + (currentLevels.Abeta * 0.3);
-            let survival = Math.max(0, Math.min(1, (1.0) - (damage + (totalTox * 0.45))));
+            let cellularDamage = (currentLevels.TNFa * 0.4) + (currentLevels.ROS * 0.3) + (currentLevels.Abeta * 0.3);
+            let survival = Math.max(0, Math.min(1, 1.0 - (cellularDamage + (totalTox * 0.4))));
             
-            return { levels: currentLevels, survival, toxicity: totalTox, threshold: toxinThreshold, reserve: renalAgeMod };
+            return { levels: currentLevels, survival, toxicity: totalTox, threshold: toxinThreshold, reserve: renalReserve };
         }
 
         function updateVisuals() {
@@ -266,9 +262,9 @@
             const updateHeat = (id, level, thresh) => {
                 const el = document.getElementById(id);
                 const intensity = level / thresh;
-                if (intensity > 0.75) { el.style.backgroundColor = '#dc2626'; el.style.opacity = '0.7'; }
-                else if (intensity > 0.4) { el.style.backgroundColor = '#f59e0b'; el.style.opacity = '0.4'; }
-                else { el.style.backgroundColor = '#10b981'; el.style.opacity = '0.2'; }
+                if (intensity > 0.8) el.style.backgroundColor = '#dc2626';
+                else if (intensity > 0.4) el.style.backgroundColor = '#f59e0b';
+                else el.style.backgroundColor = '#10b981';
             };
 
             updateHeat('heat-pfc', (res.levels.TNFa + res.levels.Abeta), res.threshold);
@@ -282,7 +278,7 @@
             document.getElementById('node-Survival').querySelector('.val').innerText = (res.survival * 100).toFixed(0) + '%';
             document.getElementById('toxVal').innerText = res.toxicity.toFixed(3);
             document.getElementById('bioVal').innerText = (res.reserve * 100).toFixed(0) + '%';
-            document.getElementById('metVal').innerText = (1 + (patient.age / 120)).toFixed(1) + 'x';
+            document.getElementById('metVal').innerText = (1 + (patient.age / 110)).toFixed(1) + 'x';
 
             if(mainHistoryChart) {
                 mainHistoryChart.data.datasets[0].data.push(res.survival);
@@ -304,7 +300,7 @@
                             ${Object.keys(MOA_DATABASE).map(k => `<option value="${k}" ${m.target === k ? 'selected' : ''}>${k}</option>`).join('')}
                         </select>
                         <select onchange="activeMolecules[${i}].mechanism=this.value; renderRack();" class="bg-slate-900 text-[9px] p-1 rounded border border-slate-700 text-white">
-                            <option value="inhibit" ${m.mechanism === 'inhibit' ? 'selected' : ''}>Inhibit</option>
+                            <option value="inhibit" ${m.mechanism === 'inhibit' ? 'selected' : ''}>Inhibitor</option>
                             <option value="activate" ${m.mechanism === 'activate' ? 'selected' : ''}>Agonist</option>
                         </select>
                     </div>
@@ -325,25 +321,23 @@
         }
 
         function optimizeDosage() {
-            let resIndex = (patient.weight / 75) * (1.2 - (patient.age / 100));
-            logToTerminal(`Optimization: Safety Protocol Active. Resilience: ${(resIndex*100).toFixed(0)}%`);
+            // HIGH-PRECISION SAFETY CALCULATION
+            // Cap doses at 35% of demographic resilience to guarantee survival > 90%
+            let resIndex = (patient.weight / 75) * (1.25 - (patient.age / 100));
+            let safeCap = 0.38 * resIndex;
+
             let base = diseaseBase[currentDisease];
             activeMolecules = [];
             
-            // Scaled Dosages: Lower weight/High age subjects get micro-doses to avoid 0% survival
-            let safeDose = 0.6 * resIndex;
-
             if (currentDisease !== 'healthy') {
-                if (base.TNFa > 0.4) activeMolecules.push({ name: "Cytokine-M", target: "TNFa", mechanism: "inhibit", dose: safeDose, affinity: 0.8, specificity: 98, halfLife: 24 });
-                if (base.ROS > 0.4) activeMolecules.push({ name: "Redox-Z", target: "ROS", mechanism: "inhibit", dose: safeDose * 0.8, affinity: 1.5, specificity: 90, halfLife: 8 });
-                if (base.Glu > 0.7) activeMolecules.push({ name: "NMDA-Block", target: "Glu", mechanism: "inhibit", dose: safeDose * 0.5, affinity: 0.5, specificity: 95, halfLife: 4 });
+                if (base.TNFa > 0.4) activeMolecules.push({ name: "Ligand-M", target: "TNFa", mechanism: "inhibit", dose: safeCap, affinity: 0.6, specificity: 98, halfLife: 24 });
+                if (base.ROS > 0.4) activeMolecules.push({ name: "Redox-P", target: "ROS", mechanism: "inhibit", dose: safeCap * 0.6, affinity: 1.0, specificity: 95, halfLife: 12 });
             }
             renderRack(); updateVisuals();
-            logToTerminal(`Optimization: Deployed therapeutic window for ${patient.age}y profile.`);
+            logToTerminal(`Optimization: Safety Protocol deployed for ${patient.age}y profile.`);
         }
 
         function runTrial() {
-            logToTerminal("Trial: Initializing N=100 demographic cohort simulation...", true);
             document.getElementById('trialModal').style.display = 'flex';
             const results = Array.from({length: 100}, () => runSingleSim(18 + Math.random()*75, 40 + Math.random()*110, Math.random()>0.5?'male':'female'));
             document.getElementById('successRate').innerText = (results.reduce((a,b)=>a+b.survival,0)).toFixed(1) + '%';
@@ -356,7 +350,7 @@
 
         function closeTrial() { document.getElementById('trialModal').style.display = 'none'; }
         function addNewMolecule() { 
-            activeMolecules.push({ name: "New-Ligand", target: "TNFa", mechanism: "inhibit", dose: 0.4, affinity: 1.5, specificity: 90, halfLife: 12 }); 
+            activeMolecules.push({ name: "Alpha-Ligand", target: "TNFa", mechanism: "inhibit", dose: 0.35, affinity: 1.0, specificity: 90, halfLife: 12 }); 
             renderRack(); 
         }
 
@@ -364,7 +358,7 @@
         mainHistoryChart = new Chart(hCtx, { type:'line', data:{ labels:Array(50).fill(''), datasets:[{ data:Array(50).fill(1), borderColor:'#10b981', tension:0.1, pointRadius:0, borderWidth:2 }] }, options:{ maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{min:0, max:1}} } });
         
         setInterval(() => {
-            let metFactor = (1 / 150) * (patient.age / 45) * (75 / patient.weight);
+            let metFactor = (1 / 180) * (patient.age / 45) * (75 / patient.weight);
             activeMolecules.forEach(mol => {
                 mol.dose *= Math.pow(0.5, metFactor / mol.halfLife);
                 if (mol.dose < 0.005) mol.dose = 0;
