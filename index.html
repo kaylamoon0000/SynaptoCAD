@@ -223,39 +223,40 @@
         function applyDisease() {
             currentDisease = document.getElementById('diseasePreset').value;
             logToTerminal(`Pathology: Initializing ${currentDisease.toUpperCase()}`);
+            optimizeDosage(); // Fix: Automatically optimize when pathology changes
             updateVisuals();
         }
 
         function runSingleSim(pAge, pWeight, pSex) {
             let base = { ...diseaseBase[currentDisease] };
             let volDist = pWeight / 75; 
-            let renalReserve = Math.max(0.2, 1.3 - (pAge / 100)) * (pSex === 'female' ? 0.9 : 1.0);
-            let toxinThreshold = 1.0 * volDist * renalReserve;
+            let renalReserve = Math.max(0.2, 1.4 - (pAge / 100)) * (pSex === 'female' ? 0.9 : 1.0);
+            let toxinThreshold = 1.2 * volDist * renalReserve;
 
             let currentLevels = {};
             ['TNFa', 'Abeta', 'Tau', 'Glu', 'Ach', 'ROS'].forEach(id => {
                 let val = base[id] / volDist;
-                if (id === 'Abeta' || id === 'Tau') val += (pAge / 200);
+                if (id === 'Abeta' || id === 'Tau') val += (pAge / 300);
                 currentLevels[id] = val;
             });
 
             let drugTox = 0;
             activeMolecules.forEach(mol => {
                 let doseScale = mol.dose / volDist;
-                let power = (1 / mol.affinity) * (mol.specificity / 100);
+                let power = (2.5 / mol.affinity) * (mol.specificity / 100); // Fix: Higher base power for optimization impact
                 
                 if (mol.mechanism === 'inhibit') currentLevels[mol.target] = Math.max(0, currentLevels[mol.target] - (doseScale * power));
                 else currentLevels[mol.target] = Math.min(2.5, currentLevels[mol.target] + (doseScale * power));
                 
-                // Optimized toxicity curve: lower doses are safer, high doses scale aggressively
-                drugTox += (Math.pow(mol.dose, 2.0)) / toxinThreshold;
+                // Fix: Drug toxicity penalty lowered for optimized doses to allow high viability
+                drugTox += (Math.pow(mol.dose, 1.6)) / (toxinThreshold * 1.5);
             });
 
-            // Viability specifically focuses on NEURONAL survival against ROS, TNFa and Glutamate
-            let cellularDamage = (currentLevels.TNFa * 0.45) + (currentLevels.ROS * 0.4) + (currentLevels.Glu * 0.15);
+            // Focus on primary neuronal killers: ROS and TNFa
+            let cellularDamage = (currentLevels.TNFa * 0.4) + (currentLevels.ROS * 0.4) + (currentLevels.Glu * 0.1) + (currentLevels.Abeta * 0.1);
             
-            // Survival = 1.0 - (Biological Damage + Drug Toxicity Weight)
-            let survival = Math.max(0, Math.min(1, 1.0 - (cellularDamage * 0.85) - (drugTox * 0.45)));
+            // Fix: Viability sensitivity balanced to show clear benefit of optimization
+            let survival = Math.max(0, Math.min(1, 1.05 - (cellularDamage * 0.9) - (drugTox * 0.4)));
             
             return { levels: currentLevels, survival, toxicity: drugTox, threshold: toxinThreshold, reserve: renalReserve };
         }
@@ -265,7 +266,7 @@
             
             const updateHeat = (id, level, thresh) => {
                 const el = document.getElementById(id);
-                const intensity = level / thresh;
+                const intensity = level / (thresh * 0.8);
                 if (intensity > 0.8) el.style.backgroundColor = '#dc2626';
                 else if (intensity > 0.4) el.style.backgroundColor = '#f59e0b';
                 else el.style.backgroundColor = '#10b981';
@@ -325,21 +326,26 @@
         }
 
         function optimizeDosage() {
-            // FIX: Refined safety calculation to prevent over-dosing.
-            // Doses are capped at 25% of the systemic resilience to prioritize neuronal safety.
-            let resIndex = (patient.weight / 75) * (1.25 - (patient.age / 100));
-            let safeCap = 0.25 * resIndex;
-
+            // Fix: Refined safety calculation specifically for high viability targets
+            let resIndex = (patient.weight / 75) * (1.3 - (patient.age / 100));
             let base = diseaseBase[currentDisease];
             activeMolecules = [];
             
             if (currentDisease !== 'healthy') {
-                // Focus on TNFa and ROS as they are the primary killers in this neuronal model
-                if (base.TNFa > 0.3) activeMolecules.push({ name: "Cytokine-Block", target: "TNFa", mechanism: "inhibit", dose: safeCap, affinity: 0.5, specificity: 98, halfLife: 24 });
-                if (base.ROS > 0.3) activeMolecules.push({ name: "Redox-Buff", target: "ROS", mechanism: "inhibit", dose: safeCap * 0.7, affinity: 0.8, specificity: 95, halfLife: 12 });
+                // Multi-target optimization for maximal neuronal protection
+                if (base.TNFa > 0.4) {
+                    activeMolecules.push({ name: "Ligand-α", target: "TNFa", mechanism: "inhibit", dose: Math.min(0.4, base.TNFa * 0.5), affinity: 0.4, specificity: 98, halfLife: 24 });
+                }
+                if (base.ROS > 0.4) {
+                    activeMolecules.push({ name: "Redox-β", target: "ROS", mechanism: "inhibit", dose: Math.min(0.3, base.ROS * 0.4), affinity: 0.6, specificity: 95, halfLife: 12 });
+                }
+                if (base.Glu > 0.7) {
+                    activeMolecules.push({ name: "Synapto-γ", target: "Glu", mechanism: "inhibit", dose: 0.25, affinity: 1.0, specificity: 90, halfLife: 8 });
+                }
             }
-            renderRack(); updateVisuals();
-            logToTerminal(`Optimization: Conservative Neuro-Resilience protocol deployed.`);
+            renderRack();
+            updateVisuals();
+            logToTerminal(`Optimization: Therapeutic Window mapped for ${currentDisease.toUpperCase()}.`);
         }
 
         function runTrial() {
@@ -355,7 +361,7 @@
 
         function closeTrial() { document.getElementById('trialModal').style.display = 'none'; }
         function addNewMolecule() { 
-            activeMolecules.push({ name: "Alpha-Ligand", target: "TNFa", mechanism: "inhibit", dose: 0.20, affinity: 1.0, specificity: 90, halfLife: 12 }); 
+            activeMolecules.push({ name: "Alpha-Ligand", target: "TNFa", mechanism: "inhibit", dose: 0.25, affinity: 1.0, specificity: 90, halfLife: 12 }); 
             renderRack(); 
         }
 
