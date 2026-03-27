@@ -117,7 +117,7 @@
                 <div class="relative z-30 flex flex-col items-center">
                     <div class="region-header">Hippocampus</div>
                     <div id="node-Survival" class="node w-36 h-36 rounded-full border-4 border-slate-900 flex flex-col items-center justify-center bg-slate-950 shadow-2xl">
-                        <span class="text-[8px] font-black text-slate-500 italic uppercase">Viability Index</span>
+                        <span class="text-[8px] font-black text-slate-500 italic uppercase">Neuronal Viability</span>
                         <span class="val font-mono text-4xl text-emerald-400">100%</span>
                     </div>
                 </div>
@@ -139,9 +139,9 @@
             </div>
 
             <div class="grid grid-cols-3 gap-3">
-                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Clearance Rate</span><span id="metVal" class="text-lg font-mono text-blue-400">1.0x</span></div>
-                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Physio-Reserve</span><span id="bioVal" class="text-lg font-mono text-emerald-400">100%</span></div>
-                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Global Toxicity</span><span id="toxVal" class="text-lg font-mono text-red-500">0.00</span></div>
+                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Metabolic Turnover</span><span id="metVal" class="text-lg font-mono text-blue-400">1.0x</span></div>
+                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Neuronal Resilience</span><span id="bioVal" class="text-lg font-mono text-emerald-400">100%</span></div>
+                <div class="stat-card text-center"><span class="block text-[7px] text-slate-500 font-bold uppercase mb-1">Systemic Toxicity Load</span><span id="toxVal" class="text-lg font-mono text-red-500">0.00</span></div>
             </div>
         </div>
 
@@ -239,7 +239,7 @@
                 currentLevels[id] = val;
             });
 
-            let totalTox = 0;
+            let drugTox = 0;
             activeMolecules.forEach(mol => {
                 let doseScale = mol.dose / volDist;
                 let power = (1 / mol.affinity) * (mol.specificity / 100);
@@ -247,13 +247,17 @@
                 if (mol.mechanism === 'inhibit') currentLevels[mol.target] = Math.max(0, currentLevels[mol.target] - (doseScale * power));
                 else currentLevels[mol.target] = Math.min(2.5, currentLevels[mol.target] + (doseScale * power));
                 
-                totalTox += (mol.dose ** 1.8) / toxinThreshold;
+                // Optimized toxicity curve: lower doses are safer, high doses scale aggressively
+                drugTox += (Math.pow(mol.dose, 2.0)) / toxinThreshold;
             });
 
-            let cellularDamage = (currentLevels.TNFa * 0.4) + (currentLevels.ROS * 0.3) + (currentLevels.Abeta * 0.3);
-            let survival = Math.max(0, Math.min(1, 1.0 - (cellularDamage + (totalTox * 0.4))));
+            // Viability specifically focuses on NEURONAL survival against ROS, TNFa and Glutamate
+            let cellularDamage = (currentLevels.TNFa * 0.45) + (currentLevels.ROS * 0.4) + (currentLevels.Glu * 0.15);
             
-            return { levels: currentLevels, survival, toxicity: totalTox, threshold: toxinThreshold, reserve: renalReserve };
+            // Survival = 1.0 - (Biological Damage + Drug Toxicity Weight)
+            let survival = Math.max(0, Math.min(1, 1.0 - (cellularDamage * 0.85) - (drugTox * 0.45)));
+            
+            return { levels: currentLevels, survival, toxicity: drugTox, threshold: toxinThreshold, reserve: renalReserve };
         }
 
         function updateVisuals() {
@@ -321,20 +325,21 @@
         }
 
         function optimizeDosage() {
-            // HIGH-PRECISION SAFETY CALCULATION
-            // Cap doses at 35% of demographic resilience to guarantee survival > 90%
+            // FIX: Refined safety calculation to prevent over-dosing.
+            // Doses are capped at 25% of the systemic resilience to prioritize neuronal safety.
             let resIndex = (patient.weight / 75) * (1.25 - (patient.age / 100));
-            let safeCap = 0.38 * resIndex;
+            let safeCap = 0.25 * resIndex;
 
             let base = diseaseBase[currentDisease];
             activeMolecules = [];
             
             if (currentDisease !== 'healthy') {
-                if (base.TNFa > 0.4) activeMolecules.push({ name: "Ligand-M", target: "TNFa", mechanism: "inhibit", dose: safeCap, affinity: 0.6, specificity: 98, halfLife: 24 });
-                if (base.ROS > 0.4) activeMolecules.push({ name: "Redox-P", target: "ROS", mechanism: "inhibit", dose: safeCap * 0.6, affinity: 1.0, specificity: 95, halfLife: 12 });
+                // Focus on TNFa and ROS as they are the primary killers in this neuronal model
+                if (base.TNFa > 0.3) activeMolecules.push({ name: "Cytokine-Block", target: "TNFa", mechanism: "inhibit", dose: safeCap, affinity: 0.5, specificity: 98, halfLife: 24 });
+                if (base.ROS > 0.3) activeMolecules.push({ name: "Redox-Buff", target: "ROS", mechanism: "inhibit", dose: safeCap * 0.7, affinity: 0.8, specificity: 95, halfLife: 12 });
             }
             renderRack(); updateVisuals();
-            logToTerminal(`Optimization: Safety Protocol deployed for ${patient.age}y profile.`);
+            logToTerminal(`Optimization: Conservative Neuro-Resilience protocol deployed.`);
         }
 
         function runTrial() {
@@ -350,7 +355,7 @@
 
         function closeTrial() { document.getElementById('trialModal').style.display = 'none'; }
         function addNewMolecule() { 
-            activeMolecules.push({ name: "Alpha-Ligand", target: "TNFa", mechanism: "inhibit", dose: 0.35, affinity: 1.0, specificity: 90, halfLife: 12 }); 
+            activeMolecules.push({ name: "Alpha-Ligand", target: "TNFa", mechanism: "inhibit", dose: 0.20, affinity: 1.0, specificity: 90, halfLife: 12 }); 
             renderRack(); 
         }
 
