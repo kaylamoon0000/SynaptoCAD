@@ -116,6 +116,7 @@
             text-transform: uppercase;
             letter-spacing: 0.08em;
             transition: all 0.25s ease;
+            text-decoration: none;
         }
         .launch-btn-primary {
             background: linear-gradient(135deg, #2563eb, #4f46e5);
@@ -231,7 +232,7 @@
 
                 <div class="launch-actions">
                     <button class="launch-btn launch-btn-primary" onclick="enterSynaptoCAD()">Launch Simulation</button>
-                    <button class="launch-btn launch-btn-secondary" onclick="document.getElementById('launchAbout').scrollIntoView({behavior:'smooth'})">Learn More</button>
+                    <a href="about.html" class="launch-btn launch-btn-secondary inline-flex items-center justify-center">Learn More</a>
                 </div>
 
                 <div id="launchStats" class="launch-mini">
@@ -433,61 +434,6 @@
             <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 h-[380px] overflow-y-auto font-mono text-[8px] text-emerald-500 shadow-inner" id="terminal"></div>
         </div>
     </main>
-
-    <section id="launchAbout" class="max-w-7xl mx-auto px-6 pb-20">
-        <div class="bg-slate-900/60 border border-slate-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl">
-            <div class="max-w-4xl">
-                <p class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 mb-4">About SynaptoCAD</p>
-                <h2 class="text-3xl md:text-5xl font-black italic uppercase tracking-tight text-white leading-tight mb-6">
-                    A digital sandbox for neurological drug simulation
-                </h2>
-                <p class="text-slate-300 text-base leading-8 mb-6">
-                    SynaptoCAD is a pharmacological simulation environment designed to model how engineered molecular
-                    compounds interact with the human neurological system. In simple terms, it acts like a digital
-                    stress test for new medicines before they ever reach real-world trials.
-                </p>
-                <p class="text-slate-300 text-base leading-8 mb-6">
-                    Users can select a neurological condition, such as Alzheimer’s disease or ischemic stroke, and the
-                    system generates a virtual brain environment shaped by the chemical markers and pathological signals
-                    associated with that disease state. From there, drug properties can be adjusted in detail, including
-                    target interaction, dosage strength, specificity, and half-life.
-                </p>
-                <p class="text-slate-300 text-base leading-8 mb-6">
-                    A key feature of the platform is that it accounts for biological variation across patients. Instead of
-                    assuming one universal response, SynaptoCAD factors in variables like age, weight, and sex to estimate
-                    whether a given dose is therapeutic, ineffective, or potentially toxic. This helps create a more realistic
-                    model of how treatments might behave across a population.
-                </p>
-                <p class="text-slate-300 text-base leading-8 mb-8">
-                    The platform can also run a simulated cohort study across 100 virtual subjects, producing a statistical
-                    forecast of treatment performance. This allows researchers to refine ideas in a risk-free, data-driven
-                    environment and explore how molecular design decisions may influence outcomes before moving into more
-                    expensive and complex stages of development.
-                </p>
-
-                <div class="grid md:grid-cols-3 gap-4">
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5">
-                        <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-black mb-2">Disease Modeling</div>
-                        <p class="text-sm text-slate-300 leading-6">
-                            Simulates condition-specific brain environments using relevant chemical markers and pathological stressors.
-                        </p>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5">
-                        <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-black mb-2">Drug Design Controls</div>
-                        <p class="text-sm text-slate-300 leading-6">
-                            Lets users tune molecular dose, affinity, specificity, and half-life to test possible treatment strategies.
-                        </p>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5">
-                        <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-black mb-2">Population Forecasting</div>
-                        <p class="text-sm text-slate-300 leading-6">
-                            Runs trials across 100 virtual subjects to estimate how a treatment may perform across a diverse cohort.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <script>
         const MOA_DATABASE = {
